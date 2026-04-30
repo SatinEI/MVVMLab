@@ -9,19 +9,9 @@ using WpfApp1.Model;
 
 namespace WpfApp1.ViewModel
 {
-    /// <summary>
-    /// Главная модель представления.
-    /// Посредник между View (окном) и Model (Contact).
-    /// Предоставляет данные, состояния и команды для взаимодействия с UI.
-    /// </summary>
-    // ViewModels/ViewModel.cs
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Windows.Input;
-        /// <summary>
-        /// Главная модель представления.
-        /// Получает IDialogService через конструктор (Constructor Injection).
-        /// </summary>
         public class ViewModels : ObservableObject
         {
             private readonly IDialogService _dialogService;
