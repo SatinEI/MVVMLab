@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using WpfApp1.ViewModel;
 
 namespace WpfApp1.Model
 {
-    using System.ComponentModel;
-    using System.Runtime.CompilerServices;
-    using System.Text.RegularExpressions;
-    using WpfApp1.ViewModel;
 
-    namespace PhoneBook.Models
-    {
+
         /// <summary>
         /// Модель данных контакта.
         /// Содержит бизнес-данные (имя, телефон) и валидацию.
@@ -71,4 +70,3 @@ namespace WpfApp1.Model
             }
         }
     }
-}

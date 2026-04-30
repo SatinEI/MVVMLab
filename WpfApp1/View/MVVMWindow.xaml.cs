@@ -23,7 +23,6 @@ namespace WpfApp1.View
         public MVVMWindow()
         {
             InitializeComponent();
-            DataContext = new MainViewModel();
         }
     }
 }
