@@ -6,37 +6,14 @@
         xmlns:local="clr-namespace:WpfApp1.View"
         mc:Ignorable="d"
         Title="MVVMWindow" Height="450" Width="800">
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <TextBox Grid.Row="0" Margin="0,5"
-                 Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                 ToolTip="Введите имя контакта"/>
-
-        <TextBox Grid.Row="1" Margin="0,5"
-                 Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}"
-                 ToolTip="Формат: +7XXXXXXXXXX или XXXXXXXXXX"/>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10">
-            <Button Content="Добавить" Width="100" Margin="0,0,10,0"
-                    Command="{Binding AddCommand}"/>
-            <Button Content="Удалить" Width="100"
-                    Command="{Binding DeleteCommand}"/>
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Background="LightGray">
+            <Button Content="Контакты" Command="{Binding ShowContactsCommand}"
+                    Margin="5" Padding="10,2"/>
+            <Button Content="О программе" Command="{Binding ShowAboutCommand}"
+                    Margin="5" Padding="10,2"/>
         </StackPanel>
-
-        <!-- Таблица для отображения списка контактов -->
-        <DataGrid Grid.Row="3" AutoGenerateColumns="False" IsReadOnly="True"
-                  ItemsSource="{Binding Contacts}"
-                  SelectedItem="{Binding SelectedContact}">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Имя" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="Телефон" Binding="{Binding Phone}" Width="*"/>
-            </DataGrid.Columns>
-        </DataGrid>
-    </Grid>
+        <!-- Область контента, привязанная к текущей ViewModel навигации -->
+        <ContentControl Content="{Binding NavigationService.CurrentViewModel}" />
+    </DockPanel>
 </Window>

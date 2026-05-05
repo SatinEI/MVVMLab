@@ -1,50 +1,41 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Configuration;
-using System.Data;
-using System.Windows;
-using WpfApp1.Model;
-using WpfApp1.View;
+﻿using System.Windows;
+using Microsoft.Extensions.DependencyInjection;
+using WpfApp1.Services;
 using WpfApp1.ViewModel;
+using WpfApp1.View;
 
 namespace WpfApp1
 {
-    /// <summary>
-    /// Interaction logic for App.xaml
-    /// </summary>
     public partial class App : Application
     {
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // 1. Создаём коллекцию сервисов
             var services = new ServiceCollection();
 
-            // 2. Регистрируем сервисы
-            // DialogService — Singleton, так как он не хранит
-            // состояние пользователя.
+            // Сервисы
             services.AddSingleton<IDialogService, DialogService>();
+            services.AddSingleton<INavigationService, NavigationService>();
 
-            // 3. ViewModel — Transient (при навигации нам будут
-            // нужны новые экземпляры)
-            services.AddTransient<ViewModels>();
+            // ViewModels
+            services.AddTransient<ContactListViewModel>();
+            services.AddTransient<ContactEditViewModel>();
+            services.AddTransient<AboutViewModel>();
+            services.AddSingleton<MainWindowViewModel>();
 
-            // 4. Главное окно — Singleton с явной передачей
-            // DataContext через лямбда-выражение
+            // Главное окно (Shell)
             services.AddSingleton<MVVMWindow>(provider =>
             {
                 var window = new MVVMWindow();
-                window.DataContext = provider.GetRequiredService<ViewModels>();
+                window.DataContext = provider.GetRequiredService<MainWindowViewModel>();
                 return window;
             });
 
-            // 5. Создаём контейнер (ServiceProvider)
             var serviceProvider = services.BuildServiceProvider();
 
-            // 6. Получаем главное окно и запускаем его
             var mainWindow = serviceProvider.GetRequiredService<MVVMWindow>();
             mainWindow.Show();
         }
     }
-
 }
