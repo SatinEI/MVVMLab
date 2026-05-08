@@ -19,7 +19,7 @@ namespace WpfApp1
             services.AddSingleton<INavigationService, NavigationService>();
 
             // ViewModels
-            services.AddTransient<ContactListViewModel>();
+            services.AddSingleton<ContactListViewModel>();
             services.AddTransient<ContactEditViewModel>();
             services.AddTransient<AboutViewModel>();
             services.AddSingleton<MainWindowViewModel>();
