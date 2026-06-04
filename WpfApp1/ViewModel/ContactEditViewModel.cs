@@ -1,6 +1,6 @@
 ﻿// ViewModels/ContactEditViewModel.cs
 using System.Windows.Input;
-using WpfApp1.Model;
+using WpfApp1.Models;
 using WpfApp1.Services;
 
 namespace WpfApp1.ViewModel
@@ -37,16 +37,15 @@ namespace WpfApp1.ViewModel
             if (parameter is Contact contact)
                 _contact = contact;
             else
-                _contact = null; // или создать новый
+                _contact = null; 
 
-            // Обновить свойства для UI
+
             OnPropertyChanged(nameof(EditName));
             OnPropertyChanged(nameof(EditPhone));
         }
 
         private void Save()
         {
-            // Здесь можно добавить валидацию или сохранение в репозиторий
             _navigationService.NavigateTo<ContactListViewModel>();
         }
 
