@@ -16,11 +16,11 @@ namespace WpfApp1.ViewModel
         public MainWindowViewModel(INavigationService navigationService)
         {
             _navigationService = navigationService;
-            ShowContactsCommand = new RelayCommand(() => _navigationService.NavigateTo<ContactListViewModel>());
+            ShowContactsCommand = new RelayCommand(() => _navigationService.NavigateTo<ContactsListViewModel>());
             ShowAboutCommand = new RelayCommand(() => _navigationService.NavigateTo<AboutViewModel>());
 
             // При запуске сразу открыть список контактов
-            _navigationService.NavigateTo<ContactListViewModel>();
+            _navigationService.NavigateTo<ContactsListViewModel>();
         }
     }
 }

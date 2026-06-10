@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using WpfApp1.Services;
 using WpfApp1.ViewModel;
 using WpfApp1.View;
+using Microsoft.EntityFrameworkCore;
+using WpfApp1.Models;
 
 namespace WpfApp1
 {
@@ -13,13 +15,15 @@ namespace WpfApp1
             base.OnStartup(e);
 
             var services = new ServiceCollection();
-
+            var connectionString = "Data Source=satinei;Initial Catalog=PhoneBookDB_SatinEI_2307b2;Integrated Security=true;TrustServerCertificate=true";
+            services.AddDbContextFactory<PhoneBookDbSatinEi2307b2Context>(options =>
+                options.UseSqlServer(connectionString));
             // Сервисы
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<INavigationService, NavigationService>();
 
             // ViewModels
-            services.AddSingleton<ContactListViewModel>();
+            services.AddSingleton<ContactsListViewModel>();
             services.AddTransient<ContactEditViewModel>();
             services.AddTransient<AboutViewModel>();
             services.AddSingleton<MainWindowViewModel>();

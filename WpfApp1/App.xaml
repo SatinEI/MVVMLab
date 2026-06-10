@@ -4,7 +4,7 @@
              xmlns:vm="clr-namespace:WpfApp1.ViewModel"
              xmlns:v="clr-namespace:WpfApp1.View">
     <Application.Resources>
-        <DataTemplate DataType="{x:Type vm:ContactListViewModel}">
+        <DataTemplate DataType="{x:Type vm:ContactsListViewModel}">
             <v:ContactListView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type vm:ContactEditViewModel}">
