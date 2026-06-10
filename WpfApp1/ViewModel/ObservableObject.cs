@@ -8,9 +8,7 @@ using System.Threading.Tasks;
 
 namespace WpfApp1.ViewModel
 {
-    //using System.ComponentModel;
-    //using System.Runtime.CompilerServices;
-    //namespace NAMESPACE;
+
     public abstract class ObservableObject : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;

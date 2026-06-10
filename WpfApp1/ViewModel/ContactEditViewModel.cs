@@ -7,49 +7,34 @@ namespace WpfApp1.ViewModel
 {
     public class ContactEditViewModel : ObservableObject, INavigationAware
     {
+        private readonly IDbContextFactory<PhoneBookDbSatinEi2307b2Context> _factory;
         private readonly INavigationService _navigationService;
 
-        private readonly PhoneBookDbSatinEi2307b2Context _context;
-
-        private Contact? _contact;
-        private bool _isNewContact;
+        private int _editingContactId;
+        private string _editName = string.Empty;
+        private string _editPhone = string.Empty;
 
         public string EditName
         {
-            get => _contact?.Name ?? string.Empty;
-            set
-            {
-                if (_contact != null)
-                {
-                    _contact.Name = value;
-                    OnPropertyChanged();
-                }
-            }
+            get => _editName;
+            set { if (Set(ref _editName, value)) CommandManager.InvalidateRequerySuggested(); }
         }
 
         public string EditPhone
         {
-            get => _contact?.Phone ?? string.Empty;
-            set
-            {
-                if (_contact != null)
-                {
-                    _contact.Phone = value;
-                    OnPropertyChanged();
-                }
-            }
+            get => _editPhone;
+            set { if (Set(ref _editPhone, value)) CommandManager.InvalidateRequerySuggested(); }
         }
 
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public ContactEditViewModel(
-            PhoneBookDbSatinEi2307b2Context context,
-            INavigationService navigationService)
+        public ContactEditViewModel(IDbContextFactory<PhoneBookDbSatinEi2307b2Context> factory,
+                                    INavigationService navigationService)
         {
-            _context = context;
+            _factory = factory;
             _navigationService = navigationService;
-            SaveCommand = new RelayCommand(Save);
+            SaveCommand = new RelayCommand(Save, CanSave);
             CancelCommand = new RelayCommand(Cancel);
         }
 
@@ -57,58 +42,59 @@ namespace WpfApp1.ViewModel
         {
             if (parameter is int contactId && contactId > 0)
             {
-                _contact = _context.Contacts.Find(contactId);
-                _isNewContact = false;
+                _editingContactId = contactId;
+                using var context = _factory.CreateDbContext();
+                var contact = context.Contacts.Find(contactId);
+                if (contact != null)
+                {
+                    EditName = contact.Name;
+                    EditPhone = contact.Phone;
+                }
             }
             else
             {
-                _contact = new Contact();
-                _isNewContact = true;
+                _editingContactId = 0;
+                EditName = string.Empty;
+                EditPhone = string.Empty;
             }
-
-            OnPropertyChanged(nameof(EditName));
-            OnPropertyChanged(nameof(EditPhone));
         }
+
+        private bool CanSave() => !string.IsNullOrWhiteSpace(EditName) && !string.IsNullOrWhiteSpace(EditPhone);
 
         private void Save()
         {
-            if (_contact == null) return;
+            if (!CanSave()) return;
 
-
-            try
+            if (!System.Text.RegularExpressions.Regex.IsMatch(EditPhone, @"^(\+7)?\d{10}$"))
             {
-                if (_isNewContact)
-                {
-                    _context.Contacts.Add(_contact);
-                }
-                else if (_context.Entry(_contact).State == EntityState.Detached)
-                {
-                    _context.Contacts.Update(_contact);
-                }
-
-                _context.SaveChanges();
-
-                _navigationService.NavigateTo<ContactsListViewModel>();
+                System.Windows.MessageBox.Show("Неверный формат телефона.", "Ошибка");
+                return;
             }
-            catch (Exception ex)
+
+            using var context = _factory.CreateDbContext();
+
+            if (_editingContactId == 0)
             {
-                System.Windows.MessageBox.Show($"Ошибка при сохранении: {ex.Message}",
-                    "Ошибка", System.Windows.MessageBoxButton.OK,
-                    System.Windows.MessageBoxImage.Error);
+                var newContact = new Contact { Name = EditName, Phone = EditPhone };
+                context.Contacts.Add(newContact);
+                context.SaveChanges();
             }
+            else
+            {
+                var contactToUpdate = context.Contacts.Find(_editingContactId);
+                if (contactToUpdate != null)
+                {
+                    contactToUpdate.Name = EditName;
+                    contactToUpdate.Phone = EditPhone;
+                    context.SaveChanges();
+                }
+            }
+
+            _navigationService.NavigateTo<ContactsListViewModel>();
         }
 
         private void Cancel()
         {
-            if (!_isNewContact && _contact != null)
-            {
-                var entry = _context.Entry(_contact);
-                if (entry.State != EntityState.Detached)
-                {
-                    entry.Reload();
-                }
-            }
-
             _navigationService.NavigateTo<ContactsListViewModel>();
         }
     }

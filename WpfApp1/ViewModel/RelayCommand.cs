@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 namespace WpfApp1.ViewModel
 {
     using System.Windows.Input;
-    //Без параметра
     public class RelayCommand(Action execute,
     Func<bool>? canExecute = null) : ICommand
     {
@@ -19,13 +18,12 @@ namespace WpfApp1.ViewModel
         {
             if (CanExecute(parameter)) _execute.Invoke();
         }
-        public event EventHandler? CanExecuteChanged //Автообновление CanExecute
+        public event EventHandler? CanExecuteChanged
         {
             add => CommandManager.RequerySuggested += value;
             remove => CommandManager.RequerySuggested -= value;
         }
     }
-    // С параметром
     public class RelayCommand<T>(Action<object?> execute,
     Predicate<object?>? canExecute = null) : ICommand
     {

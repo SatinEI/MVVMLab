@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Windows.Input;
 using System.Xml.Linq;
+using Microsoft.EntityFrameworkCore;
 using WpfApp1.Models;
 using WpfApp1.Services;
 
@@ -9,131 +10,96 @@ namespace WpfApp1.ViewModel
 {
     public class ContactsListViewModel : ObservableObject
     {
+        private readonly IDbContextFactory<PhoneBookDbSatinEi2307b2Context> _factory;
         private readonly IDialogService _dialogService;
         private readonly INavigationService _navigationService;
 
-        private readonly PhoneBookDbSatinEi2307b2Context _context;
-
-        public ObservableCollection<Contact> Contacts { get; }
+        public ObservableCollection<Contact> Contacts { get; } = new();
 
         private string _name = string.Empty;
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                if (Set(ref _name, value))
-                    CommandManager.InvalidateRequerySuggested();
-            }
-        }
+        public string Name { get => _name; set { if (Set(ref _name, value)) CommandManager.InvalidateRequerySuggested(); } }
 
         private string _phone = string.Empty;
-        public string Phone
-        {
-            get => _phone;
-            set
-            {
-                if (Set(ref _phone, value))
-                    CommandManager.InvalidateRequerySuggested();
-            }
-        }
+        public string Phone { get => _phone; set { if (Set(ref _phone, value)) CommandManager.InvalidateRequerySuggested(); } }
 
         private Contact? _selectedContact;
-        public Contact? SelectedContact
-        {
-            get => _selectedContact;
-            set
-            {
-                if (Set(ref _selectedContact, value))
-                    CommandManager.InvalidateRequerySuggested();
-            }
-        }
+        public Contact? SelectedContact { get => _selectedContact; set { if (Set(ref _selectedContact, value)) CommandManager.InvalidateRequerySuggested(); } }
 
         public ICommand AddCommand { get; }
         public ICommand DeleteCommand { get; }
         public ICommand EditCommand { get; }
 
-        public ContactsListViewModel(
-            PhoneBookDbSatinEi2307b2Context context,
-            IDialogService dialogService,
-            INavigationService navigationService)
+        public ContactsListViewModel(IDbContextFactory<PhoneBookDbSatinEi2307b2Context> factory,
+                                     IDialogService dialogService,
+                                     INavigationService navigationService)
         {
-            _context = context;
+            _factory = factory;
             _dialogService = dialogService;
             _navigationService = navigationService;
-
-            Contacts = new ObservableCollection<Contact>(_context.Contacts.ToList());
 
             AddCommand = new RelayCommand(AddContact, CanAddContact);
             DeleteCommand = new RelayCommand(DeleteContact, CanDeleteContact);
             EditCommand = new RelayCommand(EditContact, () => SelectedContact != null);
+
+            LoadContacts(); 
+        }
+
+        private void LoadContacts()
+        {
+            Contacts.Clear();
+            using var context = _factory.CreateDbContext();
+            var items = context.Contacts.ToList();
+            foreach (var c in items)
+                Contacts.Add(c);
         }
 
         private void AddContact()
         {
-            if (Contacts.Any(c => c.Phone == Phone))
+            if (string.IsNullOrWhiteSpace(Name) || string.IsNullOrWhiteSpace(Phone))
             {
-                _dialogService.ShowWarning("Контакт с таким номером уже существует!");
+                _dialogService.ShowWarning("Заполните имя и телефон.");
                 return;
             }
 
-            try
+            if (!System.Text.RegularExpressions.Regex.IsMatch(Phone, @"^(\+7)?\d{10}$"))
             {
-                var newContact = new Contact { Name = Name, Phone = Phone };
-
-                _context.Contacts.Add(newContact);
-
-                _context.SaveChanges();
-
-                Contacts.Add(newContact);
-
-                _dialogService.ShowInfo($"Контакт \"{newContact.Name}\" успешно добавлен.");
-
-                // Очищаем поля ввода
-                Name = string.Empty;
-                Phone = string.Empty;
+                _dialogService.ShowWarning("Телефон должен быть в формате +7XXXXXXXXXX или XXXXXXXXXX.");
+                return;
             }
-            catch (Exception ex)
-            {
-                _dialogService.ShowError($"Ошибка при добавлении контакта: {ex.Message}");
-            }
+
+            using var context = _factory.CreateDbContext();
+            var newContact = new Contact { Name = Name, Phone = Phone };
+            context.Contacts.Add(newContact);
+            context.SaveChanges();
+
+            Contacts.Add(newContact);
+            _dialogService.ShowInfo($"Контакт \"{newContact.Name}\" добавлен.");
+            Name = string.Empty;
+            Phone = string.Empty;
         }
 
-        private bool CanAddContact()
-        {
-            if (string.IsNullOrWhiteSpace(Name))
-                return false;
+        private bool CanAddContact() => !string.IsNullOrWhiteSpace(Name) && !string.IsNullOrWhiteSpace(Phone);
 
-            if (string.IsNullOrWhiteSpace(Phone))
-                return false;
-
-            var regex = new System.Text.RegularExpressions.Regex(@"^(\+7)?\d{10}$");
-            return regex.IsMatch(Phone);
-        }
         private void DeleteContact()
         {
             if (SelectedContact == null) return;
+            if (!_dialogService.ShowConfirmation($"Удалить контакт \"{SelectedContact.Name}\"?"))
+                return;
 
-            if (_dialogService.ShowConfirmation(
-                $"Удалить контакт \"{SelectedContact.Name}\"?"))
+            using var context = _factory.CreateDbContext();
+            var contactToDelete = context.Contacts.Find(SelectedContact.Id);
+            if (contactToDelete != null)
             {
-                try
-                {
-                    _context.Contacts.Remove(SelectedContact);
-
-                    _context.SaveChanges();
-
-                    Contacts.Remove(SelectedContact);
-                    SelectedContact = null;
-                }
-                catch (Exception ex)
-                {
-                    _dialogService.ShowError($"Ошибка при удалении контакта: {ex.Message}");
-                }
+                context.Contacts.Remove(contactToDelete);
+                context.SaveChanges();
             }
+
+            Contacts.Remove(SelectedContact);
+            SelectedContact = null;
         }
 
         private bool CanDeleteContact() => SelectedContact != null;
+
         private void EditContact()
         {
             if (SelectedContact != null)

@@ -18,17 +18,14 @@ namespace WpfApp1
             var connectionString = "Data Source=satinei;Initial Catalog=PhoneBookDB_SatinEI_2307b2;Integrated Security=true;TrustServerCertificate=true";
             services.AddDbContextFactory<PhoneBookDbSatinEi2307b2Context>(options =>
                 options.UseSqlServer(connectionString));
-            // Сервисы
             services.AddSingleton<IDialogService, DialogService>();
             services.AddSingleton<INavigationService, NavigationService>();
 
-            // ViewModels
             services.AddSingleton<ContactsListViewModel>();
             services.AddTransient<ContactEditViewModel>();
             services.AddTransient<AboutViewModel>();
             services.AddSingleton<MainWindowViewModel>();
 
-            // Главное окно (Shell)
             services.AddSingleton<MVVMWindow>(provider =>
             {
                 var window = new MVVMWindow();
